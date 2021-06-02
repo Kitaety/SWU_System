@@ -1,0 +1,8 @@
+{
+    "id": 1,
+    "com": "COM3",
+    "timeUpdate": 1000,
+    "ip": "127.0.0.1",
+    "port": 8888,
+    "timeSend": 10000
+}
