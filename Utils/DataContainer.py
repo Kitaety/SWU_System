@@ -13,7 +13,7 @@ from Utils.ConnectionManager import instance as ConnectionManager
 class DataContainer():
     detectors: List[Detector] = list()
     currentPort = ''
-
+    networkState = 'Offline'
     __id__ = 0
     __currentPath__ = ''
     __detectorsFile__ = ''
@@ -34,8 +34,6 @@ class DataContainer():
             self.__timeUpdate__/1000, lambda: self.__updateDetectors__())
         self.__networkThread__ = threading.Thread(
             target=self.__sendData__, daemon=True)
-        ConnectionManager.connect(
-            self.__id__, self.__ipAdress__, self.__port__)
         self.__networkThread__.start()
 
     def setPort(self, port):
@@ -43,6 +41,7 @@ class DataContainer():
         self.__saveSettings__()
 
     def dispose(self):
+        ConnectionManager.send(4, '')
         self.__timer__.stop()
 
     def __loadDetectors__(self):
@@ -57,13 +56,13 @@ class DataContainer():
             print('Create new file detectors.json\n')
             f = open(self.__detectorsFile__, 'w')
             detector: Detector = Detector(
-                'Temperature', 0, 0, 1, '°С', 'int16', 1000)
+                1, 'Temperature', 0, 0, 1, '°С', 'int16', 1000)
             self.detectors.append(detector)
             detector: Detector = Detector(
-                'PH Metre', 0, 0, 1, '', 'int16', 2000)
+                2, 'PH Metre', 0, 0, 1, '', 'int16', 2000)
             self.detectors.append(detector)
             detector: Detector = Detector(
-                'TDS Metre', 0, 0, 1, '', 'integer', 3000)
+                3, 'TDS Metre', 0, 0, 1, '', 'integer', 3000)
             self.detectors.append(detector)
             json.dump(self.detectors, f,
                       default=Detector.toJson, indent=4)
@@ -108,53 +107,30 @@ class DataContainer():
             self.__isUpdatedDetectors__ = False
 
     def __sendData__(self):
-        print(ConnectionManager)
+        lastUpdateTime = 0
         while True:
-            if(ConnectionManager != None):
-                if(ConnectionManager.connect(self.__id__, self.__ipAdress__, self.__port__)):
-                    lastUpdateTime = int(time.time()*1000)
+            if(int(time.time()*1000) > lastUpdateTime + self.__intervalSend__):
+                if(ConnectionManager.connect(self.__id__, self.__ipAdress__, self.__port__, self.detectors)):
+                    self.networkState = 'Online'
                     while True:
                         if(int(time.time()*1000) > lastUpdateTime + self.__intervalSend__):
                             data = []
                             for i in list(range(0, len(self.detectors))):
                                 d = self.detectors[i]
                                 data.append({
-                                    'number': i,
-                                    'type': d.groupe,
-                                    'value': round(d.value, 2)
+                                    'Id': d.idInSystem,
+                                    'Type': d.groupe,
+                                    'Value': round(d.value, 2)
                                 })
                             if(ConnectionManager.send(3, data)):
-                                lastUpdateTime = int(time.time()*1000)
                                 print('complete send data\n')
+                                lastUpdateTime = int(time.time()*1000)
                             else:
                                 break
-
-            # try:
-            #     sock.connect(server_address)
-            #     print('connecting to {}\n'.format(server_address))
-            #     sock.sendall(str(self.__id__).encode())
-            #     lastUpdateTime = int(time.time()*1000)
-            #     while True:
-            #         if(int(time.time()*1000) > lastUpdateTime + self.__intervalSend__):
-            #             print('send data to server {}:{}\n'.format(
-            #                 self.__ipAdress__, self.__port__))
-            #             package = {
-            #                 'id': self.__id__,
-            #                 'date': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            #                 'data': []
-            #             }
-            #             for i in list(range(0, len(self.detectors))):
-            #                 d = self.detectors[i]
-            #                 package['data'].append({
-            #                     'number': i,
-            #                     'type': d.groupe,
-            #                     'value': round(d.value, 2)
-            #                 })
-            #             sock.sendall(json.dumps(package).encode())
-            #             lastUpdateTime = int(time.time()*1000)
-            #             print('complete send data\n')
-            # except socket.error as exc:
-            #     print("Caught exception socket.error : {}\n".format(exc))
+                else:
+                    self.networkState = 'Offline'
+                    print('not connect')
+                    lastUpdateTime = int(time.time()*1000)
 
 
 instance = DataContainer()

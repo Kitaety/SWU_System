@@ -1,5 +1,6 @@
 [
     {
+        "idInSystem": 1,
         "name": "Temperature",
         "groupe": 1,
         "unity": "\u00b0\u0421",
@@ -18,6 +19,7 @@
         "dsrdtr": 0
     },
     {
+        "idInSystem": 2,
         "name": "PH Metrer",
         "groupe": 2,
         "unity": "",
@@ -36,6 +38,7 @@
         "dsrdtr": 0
     },
     {
+        "idInSystem": 3,
         "name": "TDS Metrer",
         "groupe": 3,
         "unity": "",

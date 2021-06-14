@@ -1,6 +1,7 @@
 import json
 import socket
 from datetime import datetime
+from Data.Detector import Detector
 
 
 class ConnectionManager():
@@ -9,36 +10,37 @@ class ConnectionManager():
     sock = None
     server_address = 0
     __id__: int
-    # __reader__: asyncio.StreamReader
-    # __writer__: asyncio.StreamWriter
 
     def __init__(self, ) -> None:
         print('create ConnectionManager')
 
-    def connect(self, id: int, ipAdress: str, port: int) -> bool:
+    def connect(self, id: int, ipAdress: str, port: int, detectors: list) -> bool:
         if(self.sock == None):
             self.__id__ = id
             self.__ipAdress__ = ipAdress
             self.__port__ = port
-            # Create a TCP/IP socket
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # Connect the socket to the port where the server is listening
             self.server_address = (self.__ipAdress__, self.__port__)
             try:
-                # self.__reader__, self.__writer__ = await asyncio.open_connection(
-                #     self.__ipAdress__, self.__port__)
                 self.sock.connect(self.server_address)
-
-                self.send(0, '')
-
+                data = []
+                for i in list(range(0, len(detectors))):
+                    detector = detectors[i]
+                    data.append({
+                        'Id': detector.idInSystem,
+                        'Type': detector.groupe,
+                        'Value': round(detector.value, 2)
+                    })
+                result = self.send(0, data)
                 print('connecting to {} {}\n'.format(
                     self.__ipAdress__, self.__port__))
-                return True
+                return result
             except socket.error as exc:
                 print("Caught exception socket.error : {}\n".format(exc))
                 return False
         else:
-            return True
+            self.sock = None
+            return False
 
     def send(self, operation: int, data) -> bool:
         try:
@@ -50,8 +52,6 @@ class ConnectionManager():
                 'Error': False,
                 'Data': json.dumps(data)
             }
-            # self.__writer__.write(json.dumps(package).encode())
-            # await self.__writer__.drain()
             mes = json.dumps(package).encode()
 
             length = len(mes)
@@ -59,15 +59,19 @@ class ConnectionManager():
             sendData = lenBytes+mes
             self.sock.sendall(sendData)
             package = ''
+            if(operation != 4):
+                length = int.from_bytes(self.sock.recv(4), byteorder="little")
+                b = self.sock.recv(length)
+                jsonStr = b.decode('utf-8')
+                package = json.loads(jsonStr)
 
-            length = int.from_bytes(self.sock.recv(4), byteorder="little")
-            b = self.sock.recv(length)
-            package = b.decode('utf-8')
+                print(package)
 
-            #package = data.decode('utf-8')
+                return package['Error'] == False
             return True
         except socket.error as exc:
             print("Caught exception socket.error : {}\n".format(exc))
+            self.sock = None
             return False
 
 

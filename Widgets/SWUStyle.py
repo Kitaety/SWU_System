@@ -24,7 +24,7 @@ tb_width = display_width/4
 tb_height = 64
 # MainStack widget size
 ms_width = 800
-ms_height = 416
+ms_height = 386
 # ---------------------------------------------------------------------------------------------------------------------
 # Font settings
 

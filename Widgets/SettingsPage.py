@@ -11,11 +11,11 @@ class SettingsPage(QWidget):
         self.setGeometry(0, tb_height, ms_width, ms_height)
 
         self.exitBtn = SWUButton(
-            self, 'Завершить работу', 590, display_height - tb_height - 60, 200, 50, False)
+            self, 'Завершить работу', 590, display_height - tb_height - 90, 200, 50, False)
         self.exitBtn.clicked.connect(exit)
 
         self.minimizedBtn = SWUButton(
-            self, 'Свернуть', 590, display_height - tb_height - 120, 200, 50, True)
+            self, 'Свернуть', 590, display_height - tb_height - 150, 200, 50, True)
 
         self.selectedPortBox = SWUCombobox(self, 10, 10)
         self.lab1 = Label("Выбор порта", self)

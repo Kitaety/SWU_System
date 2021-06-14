@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QButtonGroup
 from Widgets.SWUWidgets import SWUMenuButton
 from Widgets.SWUStyle import *
 from Widgets.StackedWidget import *
-
+from Widgets.InfoPanel import InfoPanel
 # ----------------------------------------------------------------------------------------------------------------------
 # MainWindow
 
@@ -43,6 +43,9 @@ class MainWindow(QMainWindow):
         self.stackMain.setCurrentIndex(0)
         self.stackMain.settings.minimizedBtn.clicked.connect(
             self.showMinimized)
+
+        self.infoPanel = InfoPanel(self)
+        self.infoPanel.setGeometry(0, tb_height+ms_height, display_width, 20)
 
     def SetPage(self):
         self.stackMain.setCurrentIndex(self.bgMenu.checkedId())

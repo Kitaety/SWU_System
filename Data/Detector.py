@@ -10,7 +10,9 @@ from Utils.EventHook import EventHook
 
 
 class Detector():
-    def __init__(self, name: str,
+    def __init__(self,
+                idInSystem:int,
+                 name: str,
                  id: int,
                  address: int,
                  countReg: int,
@@ -26,6 +28,7 @@ class Detector():
                  dsrdtr: int = 0,
                  multiplier: float = 1.0,
                  groupe: int = 1) -> None:
+        self.idInSystem = idInSystem
         self.id = id
         self.address = address
         self.countReg = countReg
@@ -90,6 +93,7 @@ class Detector():
     def toJson(o):
         if isinstance(o, Detector):
             return {
+                'idInSystem':o.idInSystem,
                 'name': o.name,
                 'groupe': o.name,
                 'unity': o.unity,
@@ -111,7 +115,8 @@ class Detector():
 
     @staticmethod
     def fromJson(o):
-        return Detector(o['name'],
+        return Detector(o['idInSystem'],
+                        o['name'],
                         o['id'],
                         o['address'],
                         o['countReg'],
